@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StreamSelect Subscriptions</title>
+  <link rel="icon" type="image/png" href="c:\Users\AKHILESH\Downloads\ChatGPT Image Jul 9, 2025, 06_27_54 PM.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .subscription-card {
+      transition: all 0.3s ease;
+    }
+
+    .subscription-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .price-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #60a5fa;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .dark-mode {
+      background-color: #1e293b;
+      color: #6a6d74ff;
+    }
+
+    .loading-spinner {
+      display: none;
+    }
+
+    .cart-count {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background-color: #f87171;
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+  
+    .pastel-blue { background-color: #cfe8fc; }
+    .pastel-pink { background-color: #ffe4e6; }
+    .pastel-yellow { background-color: #fef9c3; }
+    .pastel-green { background-color: #dcfce7; }
+    .pastel-purple { background-color: #ede9fe; }
+  </style>
+</head>
+<body class="bg-pastel-blue dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition duration-300">
+
+ 
+  <header class="bg-white dark:bg-gray-800 shadow p-4 text-center text-xl font-bold text-blue-600 dark:text-blue-400">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <div class="logo-container flex items-center space-x-2">
+        <img src="c:\Users\AKHILESH\Downloads\ChatGPT Image Jul 9, 2025, 06_27_54 PM.png" alt="Logo" class="h-14 w-14 rounded-full" />
+        <span class="text-2xl font-semibold text-blue-700 dark:text-blue-300">StreamSelect</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <button id="themeToggle" class="p-2 bg-pastel-yellow rounded-full hover:scale-105 transition">
+          <i class="fas fa-moon dark:hidden"></i>
+          <i class="fas fa-sun hidden dark:block"></i>
+        </button>
+        <div class="relative">
+          <button id="cartButton" class="p-2 bg-pastel-pink rounded-full hover:scale-105 transition">
+            <i class="fas fa-shopping-cart"></i>
+            <span id="cartCount" class="cart-count">0</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+
+  <section class="p-6 max-w-6xl mx-auto">
+    <div class="grid md:grid-cols-3 gap-6 mb-8">
+      <div>
+        <label class="block mb-1">Category:</label>
+        <select id="categorySelect" class="w-full p-2 border rounded bg-pastel-green dark:bg-gray-700 dark:border-gray-600">
+          <option value="all">All Categories</option>
+          <option value="tv">Movies & TV</option>
+          <option value="music">Music</option>
+          <option value="combo">Combo Packs</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block mb-1">Max Price: ₹<span id="priceValue">2000</span></label>
+        <input type="range" id="priceRange" min="100" max="2000" value="2000" class="price-slider w-full bg-pastel-yellow" />
+      </div>
+
+      <div>
+        <label class="block mb-1">Search:</label>
+        <div class="relative">
+          <input type="text" id="searchInput" placeholder="Search subscriptions..." class="w-full pl-10 p-2 border rounded bg-pastel-purple dark:bg-gray-700 dark:border-gray-600">
+          <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+        </div>
+      </div>
+    </div>
+
+   
+    <div class="flex justify-center mb-8">
+      <div class="inline-flex rounded-md shadow-sm">
+        <button id="sortPrice" class="px-4 py-2 bg-blue-400 hover:bg-blue-500 text-white font-medium rounded-l-md">Sort by Price</button>
+        <button id="sortName" class="px-4 py-2 bg-pastel-pink hover:bg-pink-300 text-gray-800 font-medium rounded-r-md">Sort by Name</button>
+      </div>
+    </div>
+
+    
+    <div id="loading" class="loading-spinner text-center py-8">
+      <i class="fas fa-spinner fa-spin fa-3x text-blue-500"></i>
+      <p class="mt-4">Loading subscriptions...</p>
+    </div>
+
+  
+    <div id="cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4"></div>
+  </section>
+
+  
+  <div id="cartModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-bold">Your Cart</h3>
+        <button id="closeCart" class="text-gray-500 dark:text-gray-300 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div id="cartItems" class="mb-4 max-h-64 overflow-y-auto">
+        <p class="text-center text-gray-500 dark:text-gray-400">Your cart is empty</p>
+      </div>
+      <div class="border-t pt-4">
+        <div class="flex justify-between mb-2">
+          <span class="font-medium">Total:</span>
+          <span id="cartTotal" class="font-bold">₹0</span>
+        </div>
+        <button id="checkoutBtn" class="w-full bg-green-400 hover:bg-green-500 text-white py-2 rounded disabled:opacity-50" disabled>Proceed to Checkout</button>
+      </div>
+    </div>
+  </div>
+
+  
+  <div id="toast" class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow hidden z-50">
+    <div class="flex items-center">
+      <span id="toastMessage"></span>
+      <button id="closeToast" class="ml-4"><i class="fas fa-times"></i></button>
+    </div>
+  </div>
+
+  
+  <footer class="bg-gray-800 text-white text-center p-4 mt-12 dark:bg-gray-900">
+    <div class="max-w-6xl mx-auto">
+      <p>&copy; 2024 StreamSelect. All rights reserved.</p>
+      <div class="flex justify-center space-x-6 mt-3 text-xl">
+        <a href="#" class="hover:text-pink-400"><i class="fab fa-facebook"></i></a>
+        <a href="#" class="hover:text-blue-400"><i class="fab fa-twitter"></i></a>
+        <a href="#" class="hover:text-purple-400"><i class="fab fa-instagram"></i></a>
+      </div>
+    </div>
+  </footer>
+
+ 
+  <script src="back.js"></script>
+</body>
+</html>
